@@ -29,4 +29,4 @@ define $(PKG)_BUILD
         `'$(TARGET)-pkg-config' gta --cflags --libs`
 endef
 
-##$(PKG)_BUILD_SHARED =
+$(PKG)_BUILD_SHARED =

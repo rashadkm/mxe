@@ -9,7 +9,7 @@ EXT_DIR  := $(TOP_DIR)/ext
 # See doc/gmsl.html for further information
 include $(EXT_DIR)/gmsl
 
-MXE_TRIPLETS       := i686-pc-mingw32 x86_64-w64-mingw32 i686-w64-mingw32
+MXE_TRIPLETS       := i686-w64-mingw32 x86_64-w64-mingw32
 MXE_LIB_TYPES      := static shared
 MXE_TARGET_LIST    := $(foreach TRIPLET,$(MXE_TRIPLETS),\
                           $(addprefix $(TRIPLET).,$(MXE_LIB_TYPES)))
@@ -310,6 +310,8 @@ $(1): | $(if $(value $(1)_DEPS), \
 	                $(addprefix $(PREFIX)/$($(1)_DEPS)/installed/,$(PKGS))))) \
 	    $($(1)_DEPS)
 	@echo '[target]   $(1) $(call TARGET_HEADER)'
+	$(if $(findstring 0,$(words $(findstring $(1),$(MXE_TARGET_LIST) $(BUILD)))),
+	    $(error Invalid target specified: "$(1)"))
 	$(if $(findstring 1,$(words $(subst ., ,$(filter-out $(BUILD),$(1))))),
 	    @echo
 	    @echo '------------------------------------------------------------'
@@ -588,6 +590,7 @@ build-matrix.html: $(foreach PKG,$(PKGS), $(TOP_DIR)/src/$(PKG).mk)
 	@echo '<thead>'                         >> $@
 	@echo '<tr>'                            >> $@
 	@echo '<th rowspan="2">Package</th>'    >> $@
+	@echo '<th rowspan="2">Version</th>'    >> $@
 	@$(foreach TRIPLET,$(MXE_TRIPLETS),          \
 	    echo '<th colspan="$(words $(MXE_LIB_TYPES))">$(TRIPLET)</th>' >> $@;)
 	@echo '<th rowspan="2">Native</th>'     >> $@
@@ -602,22 +605,24 @@ build-matrix.html: $(foreach PKG,$(PKGS), $(TOP_DIR)/src/$(PKG).mk)
 	@$(foreach PKG,$(PKGS),                      \
 	    $(eval $(PKG)_VIRTUAL := $(true))        \
 	    $(eval $(PKG)_BUILD_ONLY := $(true))     \
-	    echo '<tr>'                         >> $@; \
-	    echo '<th class="row">$(PKG)</th>'  >> $@; \
+	    echo -e '<tr>\n                          \
+	        <th class="row">$(PKG)</th>\n        \
+	        <td>$(call substr,$($(PKG)_VERSION),1,12)$(if $(call gt,$(call strlen,$($(PKG)_VERSION)),12),&hellip;)</td>\n\
 	    $(foreach TARGET,$(MXE_TARGET_LIST),     \
 	        $(if $(value $(call LOOKUP_PKG_RULE,$(PKG),BUILD,$(TARGET))), \
 	            $(eval $(TARGET)_PKGCOUNT := $(call inc,$($(TARGET)_PKGCOUNT))) \
 	            $(eval $(PKG)_VIRTUAL := $(false)) \
 	            $(eval $(PKG)_BUILD_ONLY := $(false)) \
-	            echo '<td class="supported">Y</td>'   >> $@;,   \
-	            echo '<td class="unsupported">N</td>' >> $@;))  \
+	            <td class="supported">&#x2713;</td>,            \
+	            <td class="unsupported">&#x2717;</td>)\n)       \
 	    $(if $(call set_is_member,$(PKG),$(BUILD_PKGS)),        \
-	        $(eval BUILD_PKGCOUNT := $(call inc,$(BUILD_PKGCOUNT))) \
 	        $(eval $(PKG)_VIRTUAL := $(false))   \
-	        echo '<td class="supported">Y</td>'   >> $@;,       \
-	        echo '<td class="unsupported">N</td>' >> $@;)       \
+	        <td class="supported">&#x2713;</td>, \
+	        <td class="unsupported">&#x2717;</td>)\n \
+	        </tr>\n' >> $@ $(newline)            \
 	    $(if $($(PKG)_VIRTUAL),                  \
-	        $(eval VIRTUAL_PKGCOUNT := $(call inc,$(VIRTUAL_PKGCOUNT)))) \
+	        $(eval VIRTUAL_PKGCOUNT := $(call inc,$(VIRTUAL_PKGCOUNT))) \
+	        $(eval $(PKG)_BUILD_ONLY := $(false))) \
 	    $(if $($(PKG)_BUILD_ONLY),               \
 	        $(eval BUILD_ONLY_PKGCOUNT := $(call inc,$(BUILD_ONLY_PKGCOUNT)))))
 	@echo '<tr>'                            >> $@
@@ -626,14 +631,15 @@ build-matrix.html: $(foreach PKG,$(PKGS), $(TOP_DIR)/src/$(PKG).mk)
 	    $(call subtract,                         \
 	        $(call subtract,$(words $(PKGS)),$(VIRTUAL_PKGCOUNT)),\
 	        $(BUILD_ONLY_PKGCOUNT)))
-	@echo '<th class="row">'                >> $@
+	@echo '<th class="row" colspan="2">'    >> $@
 	@echo 'Total: $(TOTAL_PKGCOUNT)<br>(+$(VIRTUAL_PKGCOUNT) virtual +$(BUILD_ONLY_PKGCOUNT) native-only)' >> $@
 	@echo '</th>'                           >> $@
 	@$(foreach TARGET,$(MXE_TARGET_LIST),        \
 	    echo '<th>$($(TARGET)_PKGCOUNT)</th>' >> $@;)
-	@echo '<th>$(BUILD_PKGCOUNT)</th>'      >> $@
+	@echo '<th>$(words $(BUILD_PKGS))</th>' >> $@
 	@echo '</tr>'                           >> $@
 	@echo '</tbody>'                        >> $@
 	@echo '</table>'                        >> $@
 	@echo '</body>'                         >> $@
+	@echo '</html>'                         >> $@
 
