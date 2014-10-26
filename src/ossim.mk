@@ -1,5 +1,6 @@
 # This file is part of MXE.
 # See index.html for further information.
+
 PKG             := ossim
 $(PKG)_IGNORE   :=
 $(PKG)_VERSION  := 1.8.18
@@ -18,9 +19,9 @@ endef
 define $(PKG)_BUILD
     mkdir '$(1).build'
     cd '$(1).build' && cmake \
-        -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
-        -DBUILD_SHARED_LIBS=ON \
-	-DCMAKE_MODULE_PATH='$(1)/ossim_package_support/cmake/CMakeModules' \
-        '$(1)/ossim'
+    -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
+    -DCMAKE_MODULE_PATH='$(1)/ossim_package_support/cmake/CMakeModules' \
+    -DCMAKE_CXX_FLAGS='-DGEOS_INLINE=1' \
+    '$(1)/ossim'
   $(MAKE) -C '$(1).build' -j '$(JOBS)' install 
 endef

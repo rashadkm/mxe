@@ -7,7 +7,7 @@ $(PKG)_VERSION  := 4.2.9
 $(PKG)_CHECKSUM := c2251642e29c7acada37d5e599e68d270088e56d
 $(PKG)_SUBDIR   := hdf-$($(PKG)_VERSION)
 $(PKG)_FILE     := hdf-$($(PKG)_VERSION).tar.bz2
-$(PKG)_URL      := http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/$($(PKG)_FILE)
+$(PKG)_URL      := http://www.hdfgroup.org/ftp/HDF/prev-releases/HDF$($(PKG)_VERSION)/src/$($(PKG)_FILE)
 $(PKG)_DEPS     := gcc zlib jpeg portablexdr
 
 define $(PKG)_UPDATE
@@ -21,19 +21,22 @@ define $(PKG)_BUILD
     cd '$(1)' && $(LIBTOOLIZE) --force
     cd '$(1)' && autoreconf --install
     cd '$(1)' && ./configure \
-        --host='$(TARGET)' \
-        --build="`config.guess`" \
-        --disable-shared \
+	$(MXE_CONFIGURE_OPTS) \
         --disable-fortran \
         --disable-netcdf \
-        --prefix='$(PREFIX)/$(TARGET)' \
-        CPPFLAGS="-DH4_F77_FUNC\(name,NAME\)=NAME -DH4_BUILT_AS_STATIC_LIB=1"
-    $(MAKE) -C '$(1)'/hdf/src -j '$(JOBS)'
+	$(if $(BUILD_STATIC), \
+        CPPFLAGS="-DH4_F77_FUNC\(name,NAME\)=NAME -DH4_BUILT_AS_STATIC_LIB=1") \
+        AR='$(TARGET)-ar' \
+	$(if $(BUILD_SHARED), \
+        LIBS="-lportablexdr -lws2_32" CPPFLAGS="-DH4_F77_FUNC\(name,NAME\)=NAME -DH4_BUILT_AS_DYNAMIC_LIB=1 -DBIG_LONGS")
+    $(MAKE) -C '$(1)'/mfhdf/xdr -j '$(JOBS)' \
+    LDFLAGS=-no-undefined
+
+    $(MAKE) -C '$(1)'/hdf/src -j '$(JOBS)' \
+    LDFLAGS=-no-undefined
     $(MAKE) -C '$(1)'/hdf/src -j 1 install
-    $(MAKE) -C '$(1)'/mfhdf/libsrc -j '$(JOBS)'
+
+    $(MAKE) -C '$(1)'/mfhdf/libsrc -j '$(JOBS)' \
+    LDFLAGS="-no-undefined -ldf"
     $(MAKE) -C '$(1)'/mfhdf/libsrc -j 1 install
 endef
-
-$(PKG)_BUILD_x86_64-w64-mingw32 =
-
-$(PKG)_BUILD_SHARED =
