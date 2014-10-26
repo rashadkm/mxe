@@ -33,7 +33,7 @@ define $(PKG)_BUILD
         -force-pkg-config \
         -release \
         -exceptions \
-	-static \
+        -static \
         -prefix '$(PREFIX)/$(TARGET)/qt' \
         -prefix-install \
         -script \
@@ -113,9 +113,6 @@ define $(PKG)_BUILD
 endef
 
 $(PKG)_BUILD_SHARED = $(subst -static ,-shared ,\
+                      $(subst -no-webkit ,-webkit ,\
                       $(subst -qt-sql-,-plugin-sql-,\
-                      $($(PKG)_BUILD)))
-
-$(PKG)_BUILD_x86_64-w64-mingw32 = $(subst -static ,-shared ,\
-                      $(subst -qt-sql-,-plugin-sql-,\
-                      $($(PKG)_BUILD)))
+                      $($(PKG)_BUILD))))
