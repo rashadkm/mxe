@@ -20,7 +20,7 @@ define $(PKG)_BUILD
     cd '$(1)' && ./configure \
         --host='$(TARGET)' \
         --prefix='$(PREFIX)/$(TARGET)' \
-        --enable-shared \
+        $(if $(BUILD_STATIC),--enable-static,--enable-shared) \
         --disable-samples \
         --disable-debug
     $(MAKE) -C '$(1)' -j '$(JOBS)' install
