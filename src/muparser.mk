@@ -18,9 +18,7 @@ endef
 
 define $(PKG)_BUILD
     cd '$(1)' && ./configure \
-        --host='$(TARGET)' \
-        --prefix='$(PREFIX)/$(TARGET)' \
-        $(if $(BUILD_STATIC),--enable-static,--enable-shared) \
+        $(MXE_CONFIGURE_OPTS) \
         --disable-samples \
         --disable-debug
     $(MAKE) -C '$(1)' -j '$(JOBS)' install
