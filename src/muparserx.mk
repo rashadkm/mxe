@@ -7,7 +7,8 @@ $(PKG)_VERSION  := 3_0_3
 $(PKG)_CHECKSUM := d476899a024b6b720591484f615464dc1eb25b23
 $(PKG)_SUBDIR   := $(PKG)_v$($(PKG)_VERSION)
 $(PKG)_FILE     := $(PKG)_v3_0_2.zip
-$(PKG)_URL      := https://sourceforge.net/projects/mxedeps/files/$($(PKG)_FILE)
+$(PKG)_URL 	    := https://sourceforge.net/projects/mxedeps/files/$($(PKG)_FILE)
+$(PKG)_URL_2    := http://muparserx.googlecode.com/svn/archives/$($(PKG)_FILE)
 $(PKG)_DEPS     := gcc
 
 define $(PKG)_UPDATE
