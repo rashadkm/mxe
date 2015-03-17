@@ -55,6 +55,7 @@ define $(PKG)_CONFIGURE
         --without-ogdi \
         --without-fme \
         --without-ecw \
+		--without-libkml \
         --without-kakadu \
         --without-mrsid \
         --without-jp2mrsid \
