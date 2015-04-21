@@ -3,8 +3,8 @@
 
 PKG             := hdf4
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 4.2.9
-$(PKG)_CHECKSUM := c2251642e29c7acada37d5e599e68d270088e56d
+$(PKG)_VERSION  := 4.2.10
+$(PKG)_CHECKSUM := 5163543895728dabb536a0659b3d965d55bccf74
 $(PKG)_SUBDIR   := hdf-$($(PKG)_VERSION)
 $(PKG)_FILE     := hdf-$($(PKG)_VERSION).tar.bz2
 $(PKG)_URL      := http://www.hdfgroup.org/ftp/HDF/prev-releases/HDF$($(PKG)_VERSION)/src/$($(PKG)_FILE)
@@ -21,13 +21,13 @@ define $(PKG)_BUILD
     cd '$(1)' && $(LIBTOOLIZE) --force
     cd '$(1)' && autoreconf --install
     cd '$(1)' && ./configure \
-	$(MXE_CONFIGURE_OPTS) \
+    $(MXE_CONFIGURE_OPTS) \
         --disable-fortran \
         --disable-netcdf \
-	$(if $(BUILD_STATIC), \
+    $(if $(BUILD_STATIC), \
         CPPFLAGS="-DH4_F77_FUNC\(name,NAME\)=NAME -DH4_BUILT_AS_STATIC_LIB=1") \
         AR='$(TARGET)-ar' \
-	$(if $(BUILD_SHARED), \
+    $(if $(BUILD_SHARED), \
         LIBS="-lportablexdr -lws2_32" CPPFLAGS="-DH4_F77_FUNC\(name,NAME\)=NAME -DH4_BUILT_AS_DYNAMIC_LIB=1 -DBIG_LONGS")
     $(MAKE) -C '$(1)'/mfhdf/xdr -j '$(JOBS)' \
     LDFLAGS=-no-undefined

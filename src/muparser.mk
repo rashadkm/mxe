@@ -18,8 +18,10 @@ endef
 
 define $(PKG)_BUILD
     cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS) \
+        $(MXE_CONFIGURE_OPTS)
         --disable-samples \
         --disable-debug
+
     $(MAKE) -C '$(1)' -j '$(JOBS)' install
+
 endef

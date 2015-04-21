@@ -10,9 +10,9 @@ diff -burN tinyxml.orig/CMakeLists.txt tinyxml/CMakeLists.txt
 +add_library(tinyxml ${tinyXMLlib_SRCS})
 +
 +install(TARGETS tinyxml
-+   RUNTIME DESTINATION bin COMPONENT RuntimeLibraries
-+   LIBRARY DESTINATION lib COMPONENT RuntimeLibraries
-+   ARCHIVE DESTINATION lib COMPONENT Development)
++   RUNTIME DESTINATION bin
++   LIBRARY DESTINATION lib
++   ARCHIVE DESTINATION lib)
 +
 +install(FILES ${tinyXMLlib_HDRS}
 +        DESTINATION include
