@@ -43,6 +43,7 @@ define $(PKG)_CONFIGURE
         --with-hdf4='$(PREFIX)/$(TARGET)' \
         --with-netcdf='$(PREFIX)/$(TARGET)' \
         --with-openjpeg='$(PREFIX)/$(TARGET)' \
+        --with-geos='$(PREFIX)/$(TARGET)/bin/geos-config' \
         --with-xml2='$(PREFIX)/$(TARGET)/bin/xml2-config' \
         --with-libjson-c='$(PREFIX)/$(TARGET)' \
         --without-odbc \
