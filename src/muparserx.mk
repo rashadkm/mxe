@@ -22,4 +22,7 @@ define $(PKG)_BUILD
 	-DCMAKE_CXX_FLAGS='-std=c++11' \
         '$(1)'	
 	$(MAKE) -C '$(1).build' install
+
+    rm -f $(PREFIX)/$(TARGET)/include/mpCompat.h
+
 endef
