@@ -20,7 +20,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_CONFIGURE
-    cd '$(1)' && autoreconf -fi -I'$(1)/mk'
+    cd '$(1)' && autoreconf -fi -I'$(1)/m4'
     # The option '--without-threads' means native win32 threading without pthread.
     cd '$(1)' && ./configure \
         $(MXE_CONFIGURE_OPTS) \
