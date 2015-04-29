@@ -62,13 +62,13 @@ define $(PKG)_BUILD
     $(SED) -i 's/dll/dll.a/g' '$(1).build/unix-install/opencv.pc'
     $(INSTALL) -m 644 '$(1).build/unix-install/opencv.pc' '$(PREFIX)/$(TARGET)/lib/pkgconfig'
 
-    $(SED) -i 's,${OpenCV_ARCH}/${OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
+    $(SED) -i 's,.{OpenCV_ARCH}/.{OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
 
-    $(if $(findstring i686-w64-mingw32,$(TARGET)),\
-	    $(SED) -i 's,H x64,H x86,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
+		$(if $(findstring i686-w64-mingw32,$(TARGET)),\
+			$(SED) -i 's/x64/x86/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
 
-    $(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
-          $(SED) -i 's,H x86,H x64,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
+		$(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
+			$(SED) -i 's/x86/x64/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
 
     '$(TARGET)-g++' \
         -W -Wall -Werror -ansi -pedantic \
