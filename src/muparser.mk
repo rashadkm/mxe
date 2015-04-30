@@ -17,10 +17,13 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    cd '$(1)' &&  ./configure \
-        $(MXE_CONFIGURE_OPTS) \
-        --disable-debug
+	cd '$(1)' &&  ./configure \
+		$(MXE_CONFIGURE_OPTS) \
+		--disable-debug
 
-    $(MAKE) -C '$(1)' -j '$(JOBS)' install
+	$(MAKE) -C '$(1)' -j '$(JOBS)' install
+
+#move dll to bin
+	mv '$(PREFIX)/$(TARGET)/lib/muparser.dll' '$(PREFIX)/$(TARGET)/bin/'
 
 endef
