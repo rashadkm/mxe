@@ -9,7 +9,7 @@ $(PKG)_SUBDIR   := gdal-$($(PKG)_VERSION)
 $(PKG)_FILE     := gdal-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := http://download.osgeo.org/gdal/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_URL_2    := ftp://ftp.remotesensing.org/gdal/$($(PKG)_VERSION)/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc proj zlib libpng libxml2 tiff libgeotiff jpeg jasper \
+$(PKG)_DEPS     := gcc proj zlib libpng libxml2 tiff libgeotiff jpeg \
                    giflib expat sqlite curl openjpeg geos postgresql gta hdf4 hdf5 \
                    json-c netcdf
 
@@ -34,7 +34,6 @@ define $(PKG)_CONFIGURE
         --with-libtiff='$(PREFIX)/$(TARGET)' \
         --with-geotiff='$(PREFIX)/$(TARGET)' \
         --with-jpeg='$(PREFIX)/$(TARGET)' \
-        --with-jasper='$(PREFIX)/$(TARGET)' \
         --with-gif='$(PREFIX)/$(TARGET)' \
         --with-expat='$(PREFIX)/$(TARGET)' \
         --with-sqlite3='$(PREFIX)/$(TARGET)' \
@@ -47,6 +46,7 @@ define $(PKG)_CONFIGURE
         --with-geos='$(PREFIX)/$(TARGET)/bin/geos-config' \
         --with-xml2='$(PREFIX)/$(TARGET)/bin/xml2-config' \
         --with-libjson-c='$(PREFIX)/$(TARGET)' \
+        --without-jasper \
         --without-odbc \
         --without-xerces \
         --without-grass \
