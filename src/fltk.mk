@@ -25,7 +25,7 @@ define $(PKG)_BUILD
         LIBS='-lws2_32'
     # enable exceptions, because disabling them doesn't make any sense on PCs
     $(SED) -i 's,-fno-exceptions,,' '$(1)/makeinclude'
-    $(MAKE) -C '$(1)' -j '$(JOBS)' install DIRS=src LIBCOMMAND='$(TARGET)-ar cr'
+    $(MAKE) -C '$(1)' -j '$(JOBS)' install=src fluid LIBCOMMAND='$(TARGET)-ar cr'
     ln -sf '$(PREFIX)/$(TARGET)/bin/fltk-config' '$(PREFIX)/bin/$(TARGET)-fltk-config'
 
     '$(TARGET)-g++' \
