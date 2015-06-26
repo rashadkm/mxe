@@ -9,7 +9,7 @@ $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := opencv-$($(PKG)_VERSION).zip
 $(PKG)_URL      := http://$(SOURCEFORGE_MIRROR)/project/$(PKG)library/$(PKG)-unix/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_URL_2    := http://distfiles.macports.org/opencv/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc eigen ffmpeg jpeg lcms1 libpng openexr tiff xz zlib
+$(PKG)_DEPS     := gcc eigen jpeg lcms1 libpng openexr tiff xz zlib
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/' | \
@@ -25,7 +25,8 @@ define $(PKG)_BUILD
       -DWITH_OPENGL=ON \
       -DWITH_GSTREAMER=OFF \
       -DWITH_GTK=OFF \
-      -DWITH_VIDEOINPUT=ON \
+      -DWITH_FFMPEG=OFF \
+      -DWITH_VIDEOINPUT=OFF \
       -DWITH_XINE=OFF \
       -DBUILD_SHARED_LIBS=$(if $(BUILD_STATIC),OFF,ON) \
       -DBUILD_opencv_apps=OFF \
@@ -39,6 +40,7 @@ define $(PKG)_BUILD
       -DBUILD_ZLIB=OFF \
       -DBUILD_TIFF=OFF \
       -DBUILD_JASPER=OFF \
+      -DWITH_JASPER=OFF \
       -DBUILD_JPEG=OFF \
       -DBUILD_PNG=OFF \
       -DBUILD_OPENEXR=OFF \
