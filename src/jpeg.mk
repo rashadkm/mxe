@@ -3,11 +3,11 @@
 
 PKG             := jpeg
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 9a
-$(PKG)_CHECKSUM := d65ed6f88d318f7380a3a5f75d578744e732daca
-$(PKG)_SUBDIR   := jpeg-$($(PKG)_VERSION)
-$(PKG)_FILE     := jpegsrc.v$($(PKG)_VERSION).tar.gz
-$(PKG)_URL      := http://www.ijg.org/files/$($(PKG)_FILE)
+$(PKG)_VERSION  := 1.4.1
+$(PKG)_CHECKSUM := 363a149f644211462c45138a19674f38100036d3
+$(PKG)_SUBDIR   := libjpeg-turbo-$($(PKG)_VERSION)
+$(PKG)_FILE     := libjpeg-turbo-$($(PKG)_VERSION).tar.gz
+$(PKG)_URL      := http://sourceforge.net/projects/libjpeg-turbo/files/1.4.1/$($(PKG)_FILE)
 $(PKG)_DEPS     := gcc
 
 define $(PKG)_UPDATE
@@ -18,7 +18,11 @@ endef
 
 define $(PKG)_BUILD
     cd '$(1)' && ./configure \
-        $(MXE_CONFIGURE_OPTS)
+        $(MXE_CONFIGURE_OPTS) \
+        --with-jpeg8 \
+        --without-simd \
+        --without-java
+
     $(MAKE) -C '$(1)' -j '$(JOBS)' install bin_PROGRAMS= sbin_PROGRAMS= noinst_PROGRAMS= man_MANS=
 
     # create pkg-config file

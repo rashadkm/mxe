@@ -1,0 +1,17 @@
+diff -burN libjpeg-turbo-1.4.1.orig/jmorecfg.h libjpeg-turbo-1.4.1/jmorecfg.h
+--- libjpeg-turbo-1.4.1.orig/jmorecfg.h	2015-07-10 13:53:18.000985000 +0200
++++ libjpeg-turbo-1.4.1/jmorecfg.h	2015-07-10 13:53:54.000006000 +0200
+@@ -146,10 +146,12 @@
+ #endif
+ 
+ /* INT32 must hold at least signed 32-bit values. */
+-
++/* Microsoft and MinGW defines it in basetsd.h */
++#if !defined(_BASETSD_H_) && !defined(_BASETSD_H)
+ #ifndef XMD_H                   /* X11/xmd.h correctly defines INT32 */
+ typedef long INT32;
+ #endif
++#endif
+ 
+ /* Datatype used for image dimensions.  The JPEG standard only supports
+  * images up to 64K*64K due to 16-bit fields in SOF markers.  Therefore
