@@ -3,7 +3,7 @@
 
 PKG             := itk
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 4.7.1
+$(PKG)_VERSION  := 4.8.2
 $(PKG)_CHECKSUM := b8ff13b4d96527270fc435222240906c9fe85a9a
 $(PKG)_SUBDIR   := InsightToolkit-$($(PKG)_VERSION)
 $(PKG)_FILE     := $($(PKG)_SUBDIR).tar.xz
