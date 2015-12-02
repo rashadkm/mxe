@@ -4,12 +4,12 @@
 PKG             := opencv
 $(PKG)_IGNORE   :=
 $(PKG)_VERSION  := 2.4.10
-$(PKG)_CHECKSUM := 0b185f5e332d5feef91722a6ed68c36a6d33909e
+$(PKG)_CHECKSUM := 1bf4cb87283797fd91669d4f90b622a677a903c20b4a577b7958a2164f7596c6
 $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := opencv-$($(PKG)_VERSION).zip
 $(PKG)_URL      := http://$(SOURCEFORGE_MIRROR)/project/$(PKG)library/$(PKG)-unix/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_URL_2    := http://distfiles.macports.org/opencv/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc eigen jpeg lcms1 libpng openexr tiff xz zlib
+$(PKG)_DEPS     := gcc eigen ffmpeg jasper jpeg lcms1 libpng openexr tiff xz zlib
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/' | \
@@ -25,8 +25,7 @@ define $(PKG)_BUILD
       -DWITH_OPENGL=ON \
       -DWITH_GSTREAMER=OFF \
       -DWITH_GTK=OFF \
-      -DWITH_FFMPEG=OFF \
-      -DWITH_VIDEOINPUT=OFF \
+      -DWITH_VIDEOINPUT=ON \
       -DWITH_XINE=OFF \
       -DBUILD_SHARED_LIBS=$(if $(BUILD_STATIC),OFF,ON) \
       -DBUILD_opencv_apps=OFF \
@@ -40,20 +39,16 @@ define $(PKG)_BUILD
       -DBUILD_ZLIB=OFF \
       -DBUILD_TIFF=OFF \
       -DBUILD_JASPER=OFF \
-      -DWITH_JASPER=OFF \
       -DBUILD_JPEG=OFF \
       -DBUILD_PNG=OFF \
       -DBUILD_OPENEXR=OFF \
-      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DCMAKE_VERBOSE=ON \
       -DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
       -DCMAKE_CXX_FLAGS='-D_WIN32_WINNT=0x0500' \
       '$(1)'
 
-#build
-    $(MAKE) -C '$(1).build' -j '$(JOBS)'
-
-# install
-    $(MAKE) -C '$(1).build' -j 1 install
+    # install
+    $(MAKE) -C '$(1).build' -j '$(JOBS)' install VERBOSE=1
 
     # fixup and install pkg-config file
     # openexr isn't available on x86_64-w64-mingw32
@@ -61,16 +56,7 @@ define $(PKG)_BUILD
     $(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
         $(SED) -i 's/OpenEXR//' '$(1).build/unix-install/opencv.pc')
     $(SED) -i 's,share/OpenCV/3rdparty/,,g' '$(1).build/unix-install/opencv.pc'
-    $(SED) -i 's/dll/dll.a/g' '$(1).build/unix-install/opencv.pc'
-    $(INSTALL) -m 644 '$(1).build/unix-install/opencv.pc' '$(PREFIX)/$(TARGET)/lib/pkgconfig'
-
-    $(SED) -i 's,.{OpenCV_ARCH}/.{OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
-
-		$(if $(findstring i686-w64-mingw32,$(TARGET)),\
-			$(SED) -i 's/x64/x86/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
-
-		$(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
-			$(SED) -i 's/x86/x64/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
+    $(INSTALL) -m755 '$(1).build/unix-install/opencv.pc' '$(PREFIX)/$(TARGET)/lib/pkgconfig'
 
     '$(TARGET)-g++' \
         -W -Wall -Werror -ansi -pedantic \

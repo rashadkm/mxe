@@ -3,10 +3,10 @@
 
 PKG             := lua
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 5.2.3
+$(PKG)_VERSION  := 5.3.2
 # Shared version
-$(PKG)_SOVERS   := 52
-$(PKG)_CHECKSUM := 926b7907bc8d274e063d42804666b40a3f3c124c
+$(PKG)_SOVERS   := 53
+$(PKG)_CHECKSUM := c740c7bb23a936944e1cc63b7c3c5351a8976d7867c5252c8854f7b2af9da68f
 $(PKG)_SUBDIR   := lua-$($(PKG)_VERSION)
 $(PKG)_FILE     := lua-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := http://www.lua.org/ftp/$($(PKG)_FILE)
@@ -69,4 +69,16 @@ define $(PKG)_BUILD_SHARED
         TO_LIB='liblua.dll.a' \
         install
     $($(PKG)_BUILD_COMMON)
+endef
+
+# disable native build temporarily
+define $(PKG)_BUILD_DISABLED
+    $(MAKE) -C '$(1)/src' -j '$(JOBS)' \
+        INSTALL_TOP='$(PREFIX)/$(TARGET)' \
+        INSTALL='$(INSTALL)' \
+        PLAT=$(shell ([ `uname -s` == Darwin ] && echo "macosx") || echo `uname -s` | tr '[:upper:]' '[:lower:]')
+    $(MAKE) -C '$(1)' -j 1 \
+        INSTALL_TOP='$(PREFIX)/$(TARGET)' \
+        INSTALL='$(INSTALL)' \
+        install
 endef

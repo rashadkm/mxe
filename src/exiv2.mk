@@ -3,12 +3,12 @@
 
 PKG             := exiv2
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 0.24
-$(PKG)_CHECKSUM := 2f19538e54f8c21c180fa96d17677b7cff7dc1bb
+$(PKG)_VERSION  := 0.25
+$(PKG)_CHECKSUM := c80bfc778a15fdb06f71265db2c3d49d8493c382e516cb99b8c9f9cbde36efa4
 $(PKG)_SUBDIR   := exiv2-$($(PKG)_VERSION)
 $(PKG)_FILE     := exiv2-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := http://www.exiv2.org/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc gettext zlib expat
+$(PKG)_DEPS     := gcc expat gettext zlib
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://www.exiv2.org/download.html' | \

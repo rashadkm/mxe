@@ -3,8 +3,8 @@
 
 PKG             := sqlite
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 3080802
-$(PKG)_CHECKSUM := 1db237523419af7110e1d92c6b766e965f9322e4
+$(PKG)_VERSION  := 3090200
+$(PKG)_CHECKSUM := 064c0abe9c9177534d4c770bca7a5902f9924b629ac886b4c08956be6dfbc36b
 $(PKG)_SUBDIR   := $(PKG)-autoconf-$($(PKG)_VERSION)
 $(PKG)_FILE     := $(PKG)-autoconf-$($(PKG)_VERSION).tar.gz
 $(PKG)_URL      := http://www.sqlite.org/2015/$($(PKG)_FILE)
@@ -22,5 +22,5 @@ define $(PKG)_BUILD
         --disable-readline \
         --enable-threadsafe \
         CFLAGS="-Os"
-    $(MAKE) -C '$(1)' -j '$(JOBS)' install
+    $(MAKE) -C '$(1)' -j 1 install
 endef

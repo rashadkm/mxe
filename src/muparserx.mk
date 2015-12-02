@@ -3,26 +3,24 @@
 
 PKG             := muparserx
 $(PKG)_IGNORE   :=
-$(PKG)_VERSION  := 3.0.5
-$(PKG)_CHECKSUM := d8f646aac4099973b70ae84e1c7cb411abb6fe0b
+$(PKG)_VERSION  := 4.0.4
+$(PKG)_CHECKSUM := d7ebcab8cb1de88e6dcba21651db8f6055b3e904c45afc387b06b5f4218dda40
 $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := $($(PKG)_SUBDIR).tar.gz
-$(PKG)_URL      := http://sourceforge.net/projects/mxedeps/files/$($(PKG)_FILE)
+$(PKG)_URL      := https://github.com/beltoforion/$(PKG)/archive/v$($(PKG)_VERSION).tar.gz
 $(PKG)_DEPS     := gcc
 
 define $(PKG)_UPDATE
-echo "TODO: write update for muparserx"
+    $(call MXE_GET_GITHUB_TAGS, beltoforion/muparserx, v)
 endef
 
 define $(PKG)_BUILD
-    mkdir '$(1).build'
-    cd '$(1).build' && cmake \
-	-DCMAKE_TOOLCHAIN_FILE='$(CMAKE_TOOLCHAIN_FILE)' \
-	-DBUILD_SHARED_LIBS=$(if $(BUILD_STATIC),FALSE,TRUE) \
-	-DCMAKE_CXX_FLAGS='-std=c++11' \
-        '$(1)'	
-	$(MAKE) -C '$(1).build' install
+    cd '$(1)' && '$(TARGET)-cmake' \
+        -DBUILD_EXAMPLES=OFF
+    $(MAKE) -C '$(1)' -j '$(JOBS)' install
 
-    rm -f $(PREFIX)/$(TARGET)/include/mpCompat.h
-
+    '$(TARGET)-g++' \
+        -W -Wall -Werror -ansi -pedantic \
+        '$(2).cpp' -o '$(PREFIX)/$(TARGET)/bin/test-$(PKG).exe' \
+        `'$(TARGET)-pkg-config' $(PKG) --cflags --libs`
 endef

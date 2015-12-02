@@ -2,12 +2,12 @@
 # See index.html for further information.
 
 PKG             := wget
-$(PKG)_VERSION  := 1.16
-$(PKG)_CHECKSUM := 08d991acc80726abe57043a278f9da469c454503
+$(PKG)_VERSION  := 1.16.3
+$(PKG)_CHECKSUM := 67f7b7b0f5c14db633e3b18f53172786c001e153d545cfc85d82759c5c2ffb37
 $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := $(PKG)-$($(PKG)_VERSION).tar.xz
 $(PKG)_URL      := http://ftp.gnu.org/gnu/$(PKG)/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc pthreads gnutls libntlm libidn
+$(PKG)_DEPS     := gcc gnutls libidn libntlm pthreads
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://git.savannah.gnu.org/cgit/wget.git/refs/' | \
@@ -20,11 +20,10 @@ define $(PKG)_BUILD
     $(if $(BUILD_STATIC), $(SED) -i 's/^base64_encode /wget_base64_encode /;' '$(1)/src/utils.c')
     $(SED) -i 's/-lidn/`$(TARGET)-pkg-config --libs libidn`/g;' '$(1)/configure'
     cd '$(1)' && ./configure \
-        --host='$(TARGET)' \
-        --build="`config.guess`" \
-        --prefix='$(PREFIX)/$(TARGET)' \
+        $(MXE_CONFIGURE_OPTS) \
         --with-ssl=gnutls \
         CFLAGS='-DIN6_ARE_ADDR_EQUAL=IN6_ADDR_EQUAL' \
         LIBS='-lpthread'
-    $(MAKE) -C '$(1)' -j '$(JOBS)' install
+    $(MAKE) -C '$(1)/lib' -j '$(JOBS)'
+    $(MAKE) -C '$(1)/src' -j '$(JOBS)' install-binPROGRAMS
 endef
