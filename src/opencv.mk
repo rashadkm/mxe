@@ -9,7 +9,7 @@ $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := opencv-$($(PKG)_VERSION).zip
 $(PKG)_URL      := http://$(SOURCEFORGE_MIRROR)/project/$(PKG)library/$(PKG)-unix/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_URL_2    := http://distfiles.macports.org/opencv/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc eigen ffmpeg jasper jpeg lcms1 libpng openexr tiff xz zlib
+$(PKG)_DEPS     := gcc eigen jpeg lcms1 libpng tiff xz zlib
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/' | \
@@ -49,6 +49,8 @@ define $(PKG)_BUILD
 
     # install
     $(MAKE) -C '$(1).build' -j '$(JOBS)' install VERBOSE=1
+
+   sed -i 's!${OpenCV_ARCH}/${OpenCV_RUNTIME}!!g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
 
     # fixup and install pkg-config file
     # openexr isn't available on x86_64-w64-mingw32
