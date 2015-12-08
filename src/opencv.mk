@@ -50,8 +50,6 @@ define $(PKG)_BUILD
     # install
     $(MAKE) -C '$(1).build' -j '$(JOBS)' install VERBOSE=1
 
-   sed -i 's!${OpenCV_ARCH}/${OpenCV_RUNTIME}!!g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
-
     # fixup and install pkg-config file
     # openexr isn't available on x86_64-w64-mingw32
     # opencv builds it's own libIlmImf.a
@@ -59,6 +57,8 @@ define $(PKG)_BUILD
         $(SED) -i 's/OpenEXR//' '$(1).build/unix-install/opencv.pc')
     $(SED) -i 's,share/OpenCV/3rdparty/,,g' '$(1).build/unix-install/opencv.pc'
     $(INSTALL) -m755 '$(1).build/unix-install/opencv.pc' '$(PREFIX)/$(TARGET)/lib/pkgconfig'
+
+  $(SED) -i 's,.{OpenCV_ARCH}/.{OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
 
     '$(TARGET)-g++' \
         -W -Wall -Werror -ansi -pedantic \
