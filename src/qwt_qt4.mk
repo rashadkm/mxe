@@ -15,7 +15,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    $(SED) -i '/\INSTALLBASE /s%\INSTALLBASE .*%INSTALLBASE=$(PREFIX)/$(TARGET)%g' '$(1)/qwtconfig.pri'
+    $(SED) -i '/\INSTALLBASE /s%\INSTALLBASE .*%INSTALLBASE=$(PREFIX)/$(TARGET)/qt%g' '$(1)/qwtconfig.pri'
     $(if $(BUILD_STATIC),\
         echo "QWT_CONFIG -= QwtDll" >> '$(1)/qwtconfig.pri')
     # build
