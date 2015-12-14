@@ -23,6 +23,6 @@ define $(PKG)_BUILD
     $(MAKE) -C '$(1)/src' -f 'Makefile.Release' -j '$(JOBS)' install
 
     $(if $(BUILD_SHARED),\
-      rm -f $(PREFIX)/$(TARGET)/lib/libqwt5.a
+      rm -f $(PREFIX)/$(TARGET)/lib/libqwt5.a)
 
 endef
