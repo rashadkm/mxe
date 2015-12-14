@@ -136,6 +136,5 @@ define $(PKG)_BUILD
 endef
 
 $(PKG)_BUILD_SHARED = $(subst -static ,-shared ,\
-                      $(subst -no-webkit ,-webkit ,\
                       $(subst -qt-sql-,-plugin-sql-,\
-                      $($(PKG)_BUILD))))
+                      $($(PKG)_BUILD)))
