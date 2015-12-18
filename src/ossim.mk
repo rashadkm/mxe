@@ -24,13 +24,13 @@ define $(PKG)_BUILD
         -DBUILD_SHARED_LIBS=$(CMAKE_SHARED_BOOL) \
         -DCMAKE_VERBOSE_MAKEFILE=TRUE \
         -DPKG_CONFIG_EXECUTABLE='$(PREFIX)/bin/$(TARGET)-pkg-config' \
-        -DCMAKE_MODULE_PATH='$(1)/ossim_package_support/cmake/CMakeModules' \
+        -DCMAKE_MODULE_PATH='$(1)/cmake/CMakeModules' \
         -DBUILD_OSSIM_FREETYPE_SUPPORT=TRUE \
         -DBUILD_OSSIM_CURL_APPS=FALSE \
         -DBUILD_OSSIM_TEST_APPS=FALSE \
         -DBUILD_OSSIM_APPS=FALSE \
         -DCMAKE_CXX_FLAGS='-DGEOS_INLINE=1' \
-        '$(1)/ossim'
+        '$(1)'
 
     $(MAKE) -C '$(1).build' -j '$(JOBS)' install VERBOSE=1
 endef
