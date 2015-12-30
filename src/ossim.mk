@@ -4,12 +4,10 @@
 PKG             := ossim
 $(PKG)_IGNORE   :=
 $(PKG)_VERSION  := 1.8.20
-$(PKG)_CHECKSUM := f01be0296b872b6696ab810fe4fb1e00f297002dc0ded19b0033595dde59ab33
-#$(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)-1
-$(PKG)_SUBDIR   := $(PKG)-minimal-r23537
+$(PKG)_CHECKSUM := a9148cbc7eebaed1d09d139e68c038592edcf74318ec2623f21494aa56879f52
+$(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)-1
 $(PKG)_FILE     := $($(PKG)_SUBDIR).tar.gz
-#$(PKG)_URL      := http://download.osgeo.org/ossim/source/$(PKG)-$($(PKG)_VERSION)/$($(PKG)_FILE)
-$(PKG)_URL      := https://www.orfeo-toolbox.org/packages/$($(PKG)_FILE)
+$(PKG)_URL      := http://download.osgeo.org/ossim/source/$(PKG)-$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_DEPS     := gcc freetype geos jpeg libpng openthreads proj tiff zlib
 
 define $(PKG)_UPDATE
