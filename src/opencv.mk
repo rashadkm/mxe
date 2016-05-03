@@ -60,7 +60,13 @@ define $(PKG)_BUILD
 
   $(SED) -i 's,.{OpenCV_ARCH}/.{OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
 
-    '$(TARGET)-g++' \
+  #For OTB Windows XDK: hack hack.. heck!
+	$(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
+		$(SED) -i 's/x86/x64/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
+	$(if $(findstring i686-w64-mingw32,$(TARGET)),\
+		$(SED) -i 's/x64/x86/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
+
+  '$(TARGET)-g++' \
         -W -Wall -Werror -ansi -pedantic \
         '$(1)/samples/c/fback_c.c' -o '$(PREFIX)/$(TARGET)/bin/test-opencv.exe' \
         `'$(TARGET)-pkg-config' opencv --cflags --libs`
