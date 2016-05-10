@@ -24,6 +24,7 @@ define $(PKG)_BUILD
         OPENSSL_LIBS="`'$(TARGET)-pkg-config' --libs-only-l openssl`" \
         PSQL_LIBS="-lpq -lsecur32 `'$(TARGET)-pkg-config' --libs-only-l openssl` -lws2_32" \
         SYBASE_LIBS="-lsybdb `'$(TARGET)-pkg-config' --libs-only-l gnutls` -liconv -lws2_32" \
+        CXXFLAGS="-std=gnu++98" \
         ./configure \
         -opensource \
         -confirm-license \
@@ -74,7 +75,6 @@ define $(PKG)_BUILD
 
     # lrelease (from linguist) needed to prepare translation files
     $(MAKE) -C '$(1)/tools/linguist/lrelease' -j '$(JOBS)' install
-    ln -fs '$(PREFIX)/$(TARGET)/bin/lrelease' '$(PREFIX)/bin/$(TARGET)-lrelease'
 
     cd '$(1)/tools/assistant' && '$(1)/bin/qmake' assistant.pro
     # can't figure out where -lQtCLucene comes from so use

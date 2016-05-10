@@ -17,6 +17,7 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
+    # TODO: use waf installed by MXE package waf
     cd '$(1)' &&                                  \
         AR='$(TARGET)-ar'                         \
         CC='$(TARGET)-gcc'                        \
@@ -27,3 +28,5 @@ define $(PKG)_BUILD
             --prefix='$(PREFIX)/$(TARGET)'        \
             --dist-target=mingw
 endef
+
+$(PKG)_BUILD_STATIC =

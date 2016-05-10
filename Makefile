@@ -38,13 +38,15 @@ WGET       := wget --no-check-certificate \
                    --user-agent=$(shell wget --version | \
                    $(SED) -n 's,GNU \(Wget\) \([0-9.]*\).*,\1/\2,p')
 
-REQUIREMENTS := autoconf automake autopoint bash bison bzip2 cmake flex \
+REQUIREMENTS := autoconf automake autopoint bash bison bzip2 flex \
                 $(BUILD_CC) $(BUILD_CXX) gperf intltoolize $(LIBTOOL) \
                 $(LIBTOOLIZE) $(MAKE) openssl $(PATCH) $(PERL) python \
                 ruby scons $(SED) $(SORT) unzip wget xz 7za gdk-pixbuf-csource
 
 PREFIX     := $(PWD)/usr
 LOG_DIR    := $(PWD)/log
+GITS_DIR   := $(PWD)/gits
+GIT_HEAD   := $(shell git rev-parse HEAD)
 TIMESTAMP  := $(shell date +%Y%m%d_%H%M%S)
 PKG_DIR    := $(PWD)/pkg
 TMP_DIR     = $(MXE_TMP)/tmp-$(1)
@@ -68,13 +70,18 @@ endef
 null  :=
 space := $(null) $(null)
 
+MXE_DISABLE_DOC_OPTS = \
+    ac_cv_prog_HAVE_DOXYGEN="false" \
+    --disable-doxygen
+
 MXE_CONFIGURE_OPTS = \
     --host='$(TARGET)' \
     --build='$(BUILD)' \
     --prefix='$(PREFIX)/$(TARGET)' \
     $(if $(BUILD_STATIC), \
         --enable-static --disable-shared , \
-        --disable-static --enable-shared )
+        --disable-static --enable-shared ) \
+    $(MXE_DISABLE_DOC_OPTS)
 
 MXE_GCC_THREADS = \
     $(if $(findstring posix,$(TARGET)),posix,win32)
@@ -148,7 +155,15 @@ endef
 PRELOAD_VARS := LD_PRELOAD DYLD_FORCE_FLAT_NAMESPACE DYLD_INSERT_LIBRARIES
 
 # use a minimal whitelist of safe environment variables
-ENV_WHITELIST := PATH LANG MAKE% MXE% %PROXY %proxy LD_LIBRARY_PATH $(PRELOAD_VARS) ACLOCAL_PATH
+# basic working shell environment and mxe variables
+# see http://www.linuxfromscratch.org/lfs/view/stable/chapter04/settingenvironment.html
+ENV_WHITELIST := EDITOR HOME LANG PATH %PROXY %proxy PS1 TERM
+ENV_WHITELIST += MAKE% MXE% $(PRELOAD_VARS)
+
+# OS/Distro related issues - "unsafe" but practical
+# 1. https://github.com/mxe/mxe/issues/697
+ENV_WHITELIST += ACLOCAL_PATH LD_LIBRARY_PATH
+
 unexport $(filter-out $(ENV_WHITELIST),$(shell env | cut -d '=' -f1))
 
 # disable wine with readonly directory (created by mxe-conf)
@@ -168,7 +183,8 @@ UNPACK_ARCHIVE = \
     $(if $(filter %.tar.xz,  $(1)),xz -dc '$(1)' | tar xf -, \
     $(if $(filter %.7z,      $(1)),7za x '$(1)', \
     $(if $(filter %.zip,     $(1)),unzip -q '$(1)', \
-    $(error Unknown archive format: $(1)))))))))))
+    $(if $(filter %.deb,     $(1)),ar x '$(1)' && tar xf data.tar*, \
+    $(error Unknown archive format: $(1))))))))))))
 
 UNPACK_PKG_ARCHIVE = \
     $(call UNPACK_ARCHIVE,$(PKG_DIR)/$($(1)_FILE))
@@ -187,7 +203,7 @@ define PREPARE_PKG_SOURCE
 endef
 
 PKG_CHECKSUM = \
-    openssl sha256 '$(PKG_DIR)/$($(1)_FILE)' 2>/dev/null | $(SED) -n 's,^.*\([0-9a-f]\{64\}\)$$,\1,p'
+    openssl dgst -sha256 '$(PKG_DIR)/$($(1)_FILE)' 2>/dev/null | $(SED) -n 's,^.*\([0-9a-f]\{64\}\)$$,\1,p'
 
 CHECK_PKG_ARCHIVE = \
     [ '$($(1)_CHECKSUM)' == "`$$(call PKG_CHECKSUM,$(1))`" ]
@@ -218,8 +234,15 @@ DOWNLOAD_PKG_ARCHIVE = \
           echo; \
           rm -f '$(PKG_DIR)/$($(1)_FILE)'; )
 
+# open issue from 2002:
+# http://savannah.gnu.org/bugs/?712
 ifneq ($(words $(PWD)),1)
     $(error GNU Make chokes on paths with spaces)
+endif
+
+# dollar signs also cause troubles
+ifneq (,$(findstring $$,$(PWD)))
+    $(error GNU Make chokes on paths with dollar signs)
 endif
 
 ifeq ($(IGNORE_SETTINGS),yes)
@@ -298,6 +321,10 @@ LOOKUP_PKG_RULE = $(strip \
 .PHONY: all
 all: all-filtered
 
+# Build native requirements for certain systems
+OS_SHORT_NAME   := $(call lc,$(shell lsb_release -sc 2>/dev/null || uname -s))
+MXE_PLUGIN_DIRS += $(realpath $(TOP_DIR)/plugins/native/$(OS_SHORT_NAME))
+
 .PHONY: check-requirements
 define CHECK_REQUIREMENT
     @if ! $(1) --help &>/dev/null; then \
@@ -313,10 +340,13 @@ define CHECK_REQUIREMENT_VERSION
     fi
 
 endef
-$(shell [ -d '$(PREFIX)/installed' ] || mkdir -p '$(PREFIX)/installed')
+
+%/.gitkeep:
+	+@mkdir -p '$(dir $@)'
+	@touch '$@'
 
 check-requirements: $(PREFIX)/installed/check-requirements
-$(PREFIX)/installed/check-requirements: $(MAKEFILE)
+$(PREFIX)/installed/check-requirements: $(MAKEFILE) | $(PREFIX)/installed/.gitkeep
 	@echo '[check requirements]'
 	$(foreach REQUIREMENT,$(REQUIREMENTS),$(call CHECK_REQUIREMENT,$(REQUIREMENT)))
 	$(call CHECK_REQUIREMENT_VERSION,autoconf,2\.6[8-9]\|2\.[7-9][0-9])
@@ -329,6 +359,13 @@ $(PREFIX)/installed/check-requirements: $(MAKEFILE)
 	    rm check-requirements-failed; \
 	    exit 1; \
 	fi
+	@touch '$@'
+
+.PHONY: print-git-oneline
+print-git-oneline: $(PREFIX)/installed/print-git-oneline-$(GIT_HEAD)
+$(PREFIX)/installed/print-git-oneline-$(GIT_HEAD): | $(PREFIX)/installed/.gitkeep
+	@git log --pretty=tformat:'[git-log]   %h %s' -1 | cat
+	@rm -f '$(PREFIX)/installed/print-git-oneline-'*
 	@touch '$@'
 
 # include core MXE packages and set *_MAKEFILE
@@ -426,11 +463,13 @@ else
     NONET_CFLAGS := -arch i386 -arch x86_64
 endif
 
-$(shell [ -d '$(PREFIX)/$(BUILD)/lib' ] || mkdir -p '$(PREFIX)/$(BUILD)/lib')
-
-$(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c
+$(NONET_LIB): $(TOP_DIR)/tools/nonetwork.c | $(PREFIX)/$(BUILD)/lib/.gitkeep
 	@echo '[build nonetwork lib]'
 	@$(BUILD_CC) -shared -fPIC $(NONET_CFLAGS) -o $@ $<
+
+.PHONY: shell
+shell: $(NONET_LIB)
+	$(PRELOAD) $(SHELL)
 
 define PKG_TARGET_RULE
 .PHONY: $(1)
@@ -443,7 +482,9 @@ $(PREFIX)/$(3)/installed/$(1): $(PKG_MAKEFILES) \
                           | $(if $(DONT_CHECK_REQUIREMENTS),,check-requirements) \
                           $(if $(value $(call LOOKUP_PKG_RULE,$(1),URL,$(3))),download-only-$(1)) \
                           $(addprefix $(PREFIX)/$(3)/installed/,$(if $(call set_is_not_member,$(1),$(MXE_CONF_PKGS)),$(MXE_CONF_PKGS))) \
-                          $(NONET_LIB)
+                          $(NONET_LIB) \
+                          $(PREFIX)/$(3)/installed/.gitkeep \
+                          print-git-oneline
 	@[ -d '$(LOG_DIR)/$(TIMESTAMP)' ] || mkdir -p '$(LOG_DIR)/$(TIMESTAMP)'
 	$(if $(value $(call LOOKUP_PKG_RULE,$(1),BUILD,$(3))),
 	    @$(PRINTF_FMT) '[build]'    '$(1)' '$(3)',
@@ -483,10 +524,12 @@ build-only-$(1)_$(3): CMAKE_SHARED_BOOL = $(if $(findstring shared,$(3)),ON,OFF)
 build-only-$(1)_$(3):
 	$(if $(value $(call LOOKUP_PKG_RULE,$(1),BUILD,$(3))),
 	    uname -a
-	    git show-branch --list --reflog=1
+	    git log --pretty=tformat:"%H - %s [%ar] [%d]" -1
 	    lsb_release -a 2>/dev/null || sw_vers 2>/dev/null || true
 	    autoconf --version 2>/dev/null | head -1
 	    automake --version 2>/dev/null | head -1
+	    python --version
+	    perl --version 2>&1 | head -3
 	    rm -rf   '$(2)'
 	    mkdir -p '$(2)'
 	    $$(if $(value $(call LOOKUP_PKG_RULE,$(1),FILE,$(3))),\
@@ -503,7 +546,6 @@ build-only-$(1)_$(3):
 	touch '$(PREFIX)/$(3)/installed/$(1)'
 endef
 $(foreach TARGET,$(MXE_TARGETS), \
-    $(shell [ -d '$(PREFIX)/$(TARGET)/installed' ] || mkdir -p '$(PREFIX)/$(TARGET)/installed') \
     $(foreach PKG,$($(TARGET)_PKGS), \
         $(eval $(call PKG_TARGET_RULE,$(PKG),$(call TMP_DIR,$(PKG)-$(TARGET)),$(TARGET)))))
 
@@ -589,7 +631,8 @@ BUILD_PKG_TMP_FILES := *-*.list mxe-*.tar.xz mxe-*.deb* wheezy jessie
 
 .PHONY: clean
 clean:
-	rm -rf $(call TMP_DIR,*) $(PREFIX) build-matrix.html \
+	@[ -d "$$WINEPREFIX" ] && chmod 0755 "$$WINEPREFIX" || true
+	rm -rf $(call TMP_DIR,*) $(PREFIX) \
 	       $(addprefix $(TOP_DIR)/, $(BUILD_PKG_TMP_FILES))
 
 .PHONY: clean-pkg
@@ -669,7 +712,7 @@ cleanup-deps-style:
 	     || echo '*** Multi-line deps are mangled ***' && comm -3 tmp-$@-pre tmp-$@-post
 	@rm -f $(TOP_DIR)/tmp-$@-*
 
-build-matrix.html: $(foreach PKG,$(PKGS), $(TOP_DIR)/src/$(PKG).mk)
+build-matrix.html: $(foreach 1,$(PKGS),$(PKG_MAKEFILES))
 	@echo '<!DOCTYPE html>'                  > $@
 	@echo '<html>'                          >> $@
 	@echo '<head>'                          >> $@
@@ -769,3 +812,7 @@ versions.json: $(foreach PKG,$(PKGS), $(TOP_DIR)/src/$(PKG).mk)
 	        "$($(PKG)_VERSION)",';)} >> $@
 	@echo '    "": null'             >> $@
 	@echo '}'                        >> $@
+
+# for patch-tool-mxe
+
+include patch.mk

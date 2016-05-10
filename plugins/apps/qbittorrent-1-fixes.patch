@@ -1,0 +1,56 @@
+This file is part of MXE.
+See index.html for further information.
+
+Contains ad hoc patches for cross building.
+
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Boris Nagaev <bnagaev@gmail.com>
+Date: Sun, 30 Aug 2015 00:28:50 +0200
+Subject: [PATCH] do not check qmake existance
+
+Fix ./configure error:
+
+checking for mxe/usr/i686-w64-mingw32.static/qt/bin/qmake...
+configure: error: cannot check for file existence when
+cross compiling
+
+diff --git a/configure b/configure
+index 1111111..2222222 100755
+--- a/configure
++++ b/configure
+@@ -4500,7 +4500,7 @@ if eval \${$as_ac_File+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   test "$cross_compiling" = yes &&
+-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
++  echo "cannot check for file existence when cross compiling" "$LINENO" 5
+ if test -r "$QT_QMAKE/qmake"; then
+   eval "$as_ac_File=yes"
+ else
+@@ -4520,7 +4520,7 @@ if eval \${$as_ac_File+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   test "$cross_compiling" = yes &&
+-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
++  echo "cannot check for file existence when cross compiling" "$LINENO" 5
+ if test -r "$QT_QMAKE/qmake-qt5"; then
+   eval "$as_ac_File=yes"
+ else
+@@ -4617,7 +4617,7 @@ if eval \${$as_ac_File+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   test "$cross_compiling" = yes &&
+-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
++  echo "cannot check for file existence when cross compiling" "$LINENO" 5
+ if test -r "$QT_QMAKE/qmake"; then
+   eval "$as_ac_File=yes"
+ else
+@@ -4637,7 +4637,7 @@ if eval \${$as_ac_File+:} false; then :
+   $as_echo_n "(cached) " >&6
+ else
+   test "$cross_compiling" = yes &&
+-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
++  echo "cannot check for file existence when cross compiling" "$LINENO" 5
+ if test -r "$QT_QMAKE/qmake-qt4"; then
+   eval "$as_ac_File=yes"
+ else
