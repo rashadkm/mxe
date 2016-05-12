@@ -9,7 +9,7 @@ $(PKG)_SUBDIR   := $(PKG)-$($(PKG)_VERSION)
 $(PKG)_FILE     := opencv-$($(PKG)_VERSION).zip
 $(PKG)_URL      := http://$(SOURCEFORGE_MIRROR)/project/$(PKG)library/$(PKG)-unix/$($(PKG)_VERSION)/$($(PKG)_FILE)
 $(PKG)_URL_2    := http://distfiles.macports.org/opencv/$($(PKG)_FILE)
-$(PKG)_DEPS     := gcc eigen jpeg lcms1 libpng tiff xz zlib
+$(PKG)_DEPS     := gcc eigen ffmpeg jasper jpeg lcms1 libpng openexr tiff xz zlib
 
 define $(PKG)_UPDATE
     $(WGET) -q -O- 'http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/' | \
@@ -58,15 +58,7 @@ define $(PKG)_BUILD
     $(SED) -i 's,share/OpenCV/3rdparty/,,g' '$(1).build/unix-install/opencv.pc'
     $(INSTALL) -m755 '$(1).build/unix-install/opencv.pc' '$(PREFIX)/$(TARGET)/lib/pkgconfig'
 
-  $(SED) -i 's,.{OpenCV_ARCH}/.{OpenCV_RUNTIME}/,,g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake'
-
-  #For OTB Windows XDK: hack hack.. heck!
-	$(if $(findstring x86_64-w64-mingw32,$(TARGET)),\
-		$(SED) -i 's/x86/x64/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
-	$(if $(findstring i686-w64-mingw32,$(TARGET)),\
-		$(SED) -i 's/x64/x86/g' '$(PREFIX)/$(TARGET)/OpenCVConfig.cmake')
-
-  '$(TARGET)-g++' \
+    '$(TARGET)-g++' \
         -W -Wall -Werror -ansi -pedantic \
         '$(1)/samples/c/fback_c.c' -o '$(PREFIX)/$(TARGET)/bin/test-opencv.exe' \
         `'$(TARGET)-pkg-config' opencv --cflags --libs`
