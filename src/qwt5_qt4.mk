@@ -15,14 +15,25 @@ define $(PKG)_UPDATE
 endef
 
 define $(PKG)_BUILD
-    $(SED) -i '/\INSTALLBASE /s%\INSTALLBASE .*%INSTALLBASE=$(PREFIX)/$(TARGET)/qwt%g' '$(1)/qwtconfig.pri'
+
+    $(SED) -i 's,INSTALLBASE.*=.*VERSION,INSTALLBASE=$(PREFIX)/$(TARGET),g' '$(1)/qwtconfig.pri'
+    $(SED) -i 's,target\.path.*=.*INSTALLBASE/lib,target.path=$(PREFIX)/$(TARGET)/bin,g' '$(1)/qwtconfig.pri'
+
+    $(if $(BUILD_SHARED),\
+        echo "LIBS += -L$(PREFIX)/$(TARGET)/bin -lqwt5" >> '$(1)/examples/simple_plot/simple_plot.pro')
+
     $(if $(BUILD_STATIC),\
         echo "QWT_CONFIG -= QwtDll" >> '$(1)/qwtconfig.pri')
     # build
     cd '$(1)/src' && $(PREFIX)/$(TARGET)/qt/bin/qmake
     $(MAKE) -C '$(1)/src' -f 'Makefile.Release' -j '$(JOBS)' install
 
-    $(if $(BUILD_SHARED),\
-      rm -f $(PREFIX)/$(TARGET)/lib/libqwt5.a)
+    #build simple_plot example to test linkage
+    cd '$(1)/examples/simple_plot' && $(PREFIX)/$(TARGET)/qt/bin/qmake
+    $(MAKE) -C '$(1)/examples/simple_plot' -f 'Makefile.Release' -j '$(JOBS)'
 
+    # install
+    $(INSTALL) -m755 '$(1)/examples/bin/simple.exe' '$(PREFIX)/$(TARGET)/bin/test-qwt5-qt4.exe'
+    $(if $(BUILD_SHARED),\
+      rm -f $(PREFIX)/$(TARGET)/bin/libqwt5.a)
 endef
